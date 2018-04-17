@@ -1,0 +1,71 @@
+FROM php:5.6.32-fpm
+
+RUN apt-get -y update  
+
+RUN apt-get install -y libmcrypt-dev libreadline-dev \
+    libpng-dev libxml2-dev libgeoip-dev libmhash-dev \
+    git wget
+
+RUN docker-php-ext-install \
+    ctype pcntl mcrypt \
+    gd bcmath \
+    calendar gettext soap sockets sysvsem \
+    wddx xmlrpc zip shmop \
+    pdo pdo_mysql mysql mysqli opcache
+
+# pear proxy(国内网路需要代理)
+RUN pear config-set http_proxy http://127.0.0.1:8118
+
+# redis
+RUN pecl install -o -f redis \
+	&&  rm -rf /tmp/pear \
+	&&  docker-php-ext-enable redis
+
+# geoip
+RUN pecl install geoip-1.1.1 \
+	&&  docker-php-ext-enable geoip 
+
+# swoole(根据需要选择版本)
+RUN git clone https://github.com/swoole/swoole-src.git \
+    && cd swoole-src \
+    && git checkout v2.0.11 \
+    && phpize && ./configure && make && make install \
+    && cd ../. && rm -rf swoole-src \
+    && docker-php-ext-enable swoole 
+
+# mhash
+RUN docker-php-ext-configure hash --with-mhash=/usr \
+    && docker-php-ext-install hash 
+
+# zookeeper
+RUN cd /tmp && wget -N http://archive.apache.org/dist/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz \
+    && tar zxvf zookeeper-3.4.6.tar.gz && rm -f zookeeper-3.4.6.tar.gz \
+    && cd zookeeper-3.4.6/src/c \
+    && ./configure --prefix=/usr/local/zookeeper \
+    && make && make install \
+    && cd /tmp && rm -rf zookeeper-3.4.6 \
+    && git clone https://github.com/jbboehr/php-zookeeper.git \
+    && cd php-zookeeper && phpize \
+    && ./configure --with-php-config=/usr/local/bin/php-config  --with-libzookeeper-dir=/usr/local/zookeeper \
+    && make && make install \
+    && echo "extension=zookeeper.so" > /usr/local/etc/php/conf.d/ext-zookeeper.ini \
+    && cd /tmp && rm -rf php-zookeeper
+
+# kafka
+RUN apt-get -y install zip && cd /tmp && wget -N https://github.com/edenhill/librdkafka/archive/master.zip -O librdkafka.zip \
+    && unzip librdkafka.zip && rm -f librdkafka.zip \
+    && cd librdkafka-master \
+    && ./configure && make && make install \
+    && cd /tmp && rm -rf librdkafka-master && git clone https://github.com/arnaud-lb/php-rdkafka.git \
+    && cd php-rdkafka && phpize \
+    && ./configure && make all -j 5 && make install \
+    && cd /tmp && rm -rf php-rdkafka \
+    && echo "extension=rdkafka.so" > /usr/local/etc/php/conf.d/ext-rdkafka.ini
+
+# ahocorasick
+RUN cd /tmp && git clone https://github.com/ph4r05/php_aho_corasick.git \
+    && cd php_aho_corasick \
+    && phpize && ./configure --enable-ahocorasick \
+    && make && make install \
+    && cd /tmp && rm -rf php_aho_corasick \ 
+    && echo "extension=ahocorasick.so" > /usr/local/etc/php/conf.d/ext-ahocorasick.ini
