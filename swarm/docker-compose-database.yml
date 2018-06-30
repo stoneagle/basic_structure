@@ -1,0 +1,36 @@
+version: '2'
+services:
+  redis:
+    image: redis:3.2
+    container_name: ${PROJECT_NAME}-${DEV_USER}-redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - default
+  influxdb:
+    environment:
+      - influxdb_admin_enabled=true
+    image: influxdb:1.5.3
+    container_name: ${PROJECT_NAME}-${DEV_USER}-influxdb
+    volumes:
+      - ../database/influxdb:/var/lib/influxdb
+      - ../config/influxdb.conf:/etc/influxdb/influxdb.conf
+    ports:
+      - "${INFLUXDB_PORT}:8086"
+    networks:
+      - default
+  mysql:
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+    image: mysql:5.6.38
+    container_name: ${PROJECT_NAME}-${DEV_USER}-mysql
+    volumes:
+      - ../database/mysql:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT}:3306"
+    networks:
+      - default
+networks:
+  default:
+    external:
+      name: ${DEV_USER}

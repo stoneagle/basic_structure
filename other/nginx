@@ -1,5 +1,0 @@
-FROM nginx:1.11
-
-#RUN mkdir /tmp/cache
-#RUN chown www-data /tmp/cache
-
