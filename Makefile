@@ -20,7 +20,7 @@ rm-db:
 	cd swarm && docker-compose -f docker-compose-database.yml -p "database-$(USER)" rm 
 
 run-envoy:       
-	cd swarm && docker-compose -f docker-compose-envoy.yml -p "envoy-$(USER)" up
+	cd swarm && docker-compose -f docker-compose-envoy.yml -p "envoy-$(USER)" up -d
 stop-envoy:
 	cd swarm && docker-compose -f docker-compose-envoy.yml -p "envoy-$(USER)" stop 
 rm-envoy:

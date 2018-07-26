@@ -22,10 +22,11 @@ services:
   mysql:
     environment:
       - MYSQL_ROOT_PASSWORD=123456
-    image: mysql:5.6.38
+    image: mysql:8.0.11
     container_name: ${PROJECT_NAME}-${DEV_USER}-mysql
     volumes:
-      - ../database/mysql:/var/lib/mysql
+      - ../config/mysql.cnf:/etc/mysql/my.cnf
+      - ../database/mysql-8.0.11:/var/lib/mysql
     ports:
       - "${MYSQL_PORT}:3306"
     networks:

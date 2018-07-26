@@ -18,21 +18,21 @@ static_resources:
               - "*"
               routes:
               - match:
-                  prefix: "/quant"
+                  prefix: "/evolution"
                 route:
-                  cluster: quant-envoy
+                  cluster: evolution-envoy
           http_filters:
           - name: envoy.router
             config: {}
   clusters:
-  - name: quant-envoy
+  - name: evolution-envoy
     connect_timeout: 0.5s
     type: strict_dns
     lb_policy: round_robin
     http2_protocol_options: {}
     hosts:
     - socket_address:
-        address: quant-envoy
+        address: evolution-envoy
         port_value: 80 
 admin:
   access_log_path: "/dev/null"
