@@ -2,10 +2,12 @@ version: '2'
 services:
   gogs:
     image: gogs/gogs 
+    extra_hosts:
+      - "basic:${MACHINE_IP}"
     container_name: ${PROJECT_NAME}-${DEV_USER}-gogs
     volumes:
       - ../database/gogs:/data
-      - ../config/gogs.app.ini:/data/gogs/conf/app.ini
+      - ../config/.gogs.app.ini:/data/gogs/conf/app.ini
     ports:
       - "${GOGS_SSH_PORT}:22"
       - "${GOGS_PORT}:3000"

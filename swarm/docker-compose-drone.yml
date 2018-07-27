@@ -1,0 +1,36 @@
+version: '2'
+services:
+  drone-server:
+    image: drone/drone:0.8
+    ports:
+      - "${DRONE_PORT}:8000"
+      - 9000
+    volumes:
+      - ../database/drone:/var/lib/drone
+    environment:
+      - DRONE_OPEN=true
+      - DRONE_DEBUG=false
+      - DRONE_DATABASE_DRIVER=mysql
+      - DRONE_DATABASE_DATASOURCE=root:123456@tcp(mysql:3306)/drone?parseTime=true
+      - DRONE_ADMIN=${DEV_USER}
+      - DRONE_GOGS=true
+      - DRONE_GOGS_URL=http://gogs:3000
+      - DRONE_SECRET=thisisdronesecret
+      - DRONE_HOST=http://drone-server:8000
+    networks:
+      - default
+  drone-agent:
+    image: drone/agent:0.8
+    command: agent
+    depends_on: [ drone-server ]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DRONE_SERVER=drone-server:9000
+      - DRONE_SECRET=thisisdronesecret
+    networks:
+      - default
+networks:
+  default:
+    external:
+      name: ${DEV_USER}
