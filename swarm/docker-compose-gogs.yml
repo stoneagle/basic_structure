@@ -2,6 +2,7 @@ version: '2'
 services:
   gogs:
     image: gogs/gogs 
+    container_name: ${PROJECT_NAME}-${DEV_USER}-gogs
     extra_hosts:
       - "basic:${MACHINE_IP}"
     container_name: ${PROJECT_NAME}-${DEV_USER}-gogs

@@ -2,6 +2,7 @@ version: '2'
 services:
   drone-server:
     image: drone/drone:0.8
+    container_name: ${PROJECT_NAME}-${DEV_USER}-drone-sever
     ports:
       - "${DRONE_PORT}:8000"
       - 9000
@@ -21,6 +22,7 @@ services:
       - default
   drone-agent:
     image: drone/agent:0.8
+    container_name: ${PROJECT_NAME}-${DEV_USER}-drone-agent
     command: agent
     depends_on: [ drone-server ]
     volumes:

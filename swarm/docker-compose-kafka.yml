@@ -2,12 +2,14 @@ version: '2'
 services:
   zookeeper:
     image: wurstmeister/zookeeper
+    container_name: ${PROJECT_NAME}-${DEV_USER}-zookeeper
     expose:
       - "2181"
     networks:
       - default
   manager:
     image: sheepkiller/kafka-manager
+    container_name: ${PROJECT_NAME}-${DEV_USER}-kafka-manager
     environment:
       ZK_HOSTS: zookeeper:2181
       APPLICATION_SECRET: 123456
@@ -19,6 +21,7 @@ services:
       - default
   kafka:
     image: wurstmeister/kafka
+    container_name: ${PROJECT_NAME}-${DEV_USER}-kafka
     environment:
       KAFKA_ADVERTISED_HOST_NAME: localhost 
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
