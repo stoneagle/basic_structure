@@ -1,0 +1,101 @@
+# ------------------- Mysql ConfigMap ------------------- #
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mysql-config 
+  namespace: kube-public 
+data:
+  cnf: |
+    [mysqld]
+    pid-file        = /var/run/mysqld/mysqld.pid
+    socket          = /var/run/mysqld/mysqld.sock
+    datadir         = /var/lib/mysql
+    secure-file-priv= NULL
+    symbolic-links=0
+    !includedir /etc/mysql/conf.d/
+    default-authentication-plugin=mysql_native_password
+
+# ------------------- Mysql Deployment ------------------- #
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  labels:
+    k8s-app: kubernetes-mysql
+  name: kubernetes-mysql
+  namespace: kube-public
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: kubernetes-mysql
+  template:
+    metadata:
+      labels:
+        k8s-app: kubernetes-mysql
+    spec:
+      containers:
+      - name: kubernetes-mysql
+        image: mysql:8.0.11
+        ports:
+        - containerPort: 3306 
+          protocol: TCP
+        args:
+          #- --apiserver-host=http://10.0.1.168:8080
+        volumeMounts:
+        - name: mysqlpd
+          mountPath: "/var/lib/mysql"
+        - name: config 
+          mountPath: "/etc/mysql"
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /
+            port: 3306 
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+      volumes:
+			- name: mysqlpd 
+				persistentVolumeClaim:
+					claimName: mysql-local-claim
+      - name: config
+        configMap:
+          name: mysql-config
+          items:
+          - key: cnf 
+            path: my.cnf 
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+
+# ------------------- Mysql Service ------------------- #
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: kubernetes-mysql
+  name: kubernetes-mysql
+  namespace: kube-public
+spec:
+  ports:
+    - port: 3306 
+      targetPort: 3306 
+  selector:
+    k8s-app: kubernetes-mysql
+
+# ------------------------------------------------------------
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: kubernetes-mysql
+  name: kubernetes-mysql-external
+  namespace: kube-public
+spec:
+  ports:
+    - port: 3306 
+      targetPort: 3306 
+      nodePort: 13306
+  type: NodePort
+  selector:
+    k8s-app: kubernetes-mysql
