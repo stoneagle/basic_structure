@@ -34,19 +34,5 @@ rm:
 build-envoy:
 	cd dockerfile && docker build -f ./Dockerfile.envoy -t $(REGISTRY_DEVELOP_PREFIX):envoy .
 
-# prepare .gogs.app.ini
-init:
-	make run SYSTEM=database UPPARAMS="-d" && \
-	make run SYSTEM=envoy UPPARAMS="-d" && \
-	curl -L https://github.com/drone/drone-cli/releases/download/v0.8.5/drone_linux_amd64.tar.gz | tar zx && \
-	sudo install -t /usr/local/bin drone && \
-	rm drone && \
-	init-mysql-db && \
-	make run SYSTEM=gogs UPPARAMS="-d" && \
-	make run SYSTEM=drone UPPARAMS="-d"
-
 init-mysql-db:
-	docker run -it --rm --network=$(USERNAME) -v $(PWD)/config:/tmp mysql:8.0.11 /bin/bash /tmp/mysql-init.sh
-
-init-hosts:
-	sudo /bin/bash $(PWD)/config/vmware-ip.sh
+	docker run --rm --network=$(USERNAME) -v $(PWD)/config:/tmp mysql:8.0.11 /bin/bash /tmp/mysql-init.sh

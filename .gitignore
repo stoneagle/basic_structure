@@ -1,2 +1,4 @@
 database/*
 *.swp
+config/.gogs.app.ini
+swarm/.env
