@@ -8,9 +8,10 @@ metadata:
   namespace: kube-public
 type: Opaque
 
+---
 # ------------------- Dashboard Deployment ------------------- #
-apiVersion: apps/v1beta2
 kind: Deployment
+apiVersion: apps/v1beta2
 metadata:
   labels:
     k8s-app: kubernetes-dashboard
@@ -64,9 +65,10 @@ spec:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
 
+---
 # ------------------- Dashboard Service ------------------- #
-apiVersion: v1
 kind: Service
+apiVersion: v1
 metadata:
   labels:
     k8s-app: kubernetes-dashboard
@@ -96,6 +98,7 @@ spec:
   selector:
     k8s-app: kubernetes-dashboard
 
+---
 # ------------------- Dashboard Service Account ------------------- #
 apiVersion: v1
 kind: ServiceAccount
@@ -105,6 +108,7 @@ metadata:
   name: kubernetes-dashboard-admin
   namespace: kube-public
   
+---
 # ------------------- Dashboard Cluster Role Binding ------------------- #
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding

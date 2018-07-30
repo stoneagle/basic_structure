@@ -24,6 +24,8 @@ spec:
   local:
     path: /home/wuzhongyang/database/mysql
 
+---
+# ------------------- Mysql PVC ------------------- #
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

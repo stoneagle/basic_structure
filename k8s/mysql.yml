@@ -15,6 +15,7 @@ data:
     !includedir /etc/mysql/conf.d/
     default-authentication-plugin=mysql_native_password
 
+---
 # ------------------- Mysql Deployment ------------------- #
 kind: Deployment
 apiVersion: apps/v1beta2
@@ -55,9 +56,9 @@ spec:
           initialDelaySeconds: 30
           timeoutSeconds: 30
       volumes:
-			- name: mysqlpd 
-				persistentVolumeClaim:
-					claimName: mysql-local-claim
+      - name: mysqlpd 
+        persistentVolumeClaim:
+          claimName: mysql-local-claim
       - name: config
         configMap:
           name: mysql-config
@@ -68,6 +69,7 @@ spec:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
 
+---
 # ------------------- Mysql Service ------------------- #
 kind: Service
 apiVersion: v1
