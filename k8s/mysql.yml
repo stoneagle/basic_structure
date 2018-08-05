@@ -45,10 +45,10 @@ spec:
           #- --apiserver-host=http://10.0.1.168:8080
         volumeMounts:
         - name: mysqlpd
-          mountPath: "/var/lib/mysql"
+          mountPath: /var/lib/mysql
         - name: mysql-config 
+          mountPath: /etc/mysql
           subPath: my.cnf 
-          mountPath: "/etc/mysql/my.cnf"
         livenessProbe:
           httpGet:
             scheme: HTTP
@@ -63,6 +63,9 @@ spec:
       - name: mysql-config
         configMap:
           name: mysql-config
+          items:
+          - key: cnf
+            path: my.cnf
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
