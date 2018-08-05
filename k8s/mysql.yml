@@ -5,15 +5,25 @@ metadata:
   name: mysql-config 
   namespace: kube-public 
 data:
-  cnf: |
+  my.cnf: |-
     [mysqld]
     pid-file        = /var/run/mysqld/mysqld.pid
     socket          = /var/run/mysqld/mysqld.sock
     datadir         = /var/lib/mysql
     secure-file-priv= NULL
     symbolic-links=0
-    !includedir /etc/mysql/conf.d/
     default-authentication-plugin=mysql_native_password
+
+---
+# ------------------- Mysql Secret ------------------- #
+kind: Secret
+apiVersion: v1
+metadata:
+  name: mysql-secret
+  namespace: kube-public 
+type: Opaque
+data:
+  password: QTIwMTM4NTAyQHd6eQ==
 
 ---
 # ------------------- Mysql Deployment ------------------- #
@@ -40,32 +50,25 @@ spec:
         image: mysql:8.0.11
         ports:
         - containerPort: 3306 
-          protocol: TCP
-        args:
-          #- --apiserver-host=http://10.0.1.168:8080
         volumeMounts:
         - name: mysqlpd
           mountPath: /var/lib/mysql
-        - name: mysql-config 
-          mountPath: /etc/mysql
-          subPath: my.cnf 
-        livenessProbe:
-          httpGet:
-            scheme: HTTP
-            path: /
-            port: 3306 
-          initialDelaySeconds: 30
-          timeoutSeconds: 30
+        - name: mysql-config-volume
+          mountPath: /etc/mysql/my.cnf
+          subPath: my.cnf
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password 
       volumes:
       - name: mysqlpd 
         persistentVolumeClaim:
           claimName: mysql-local-claim
-      - name: mysql-config
+      - name: mysql-config-volume
         configMap:
           name: mysql-config
-          items:
-          - key: cnf
-            path: my.cnf
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
