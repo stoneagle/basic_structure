@@ -46,8 +46,9 @@ spec:
         volumeMounts:
         - name: mysqlpd
           mountPath: "/var/lib/mysql"
-        - name: config 
-          mountPath: "/etc/mysql"
+        - name: mysql-config 
+          subPath: my.cnf 
+          mountPath: "/etc/mysql/my.cnf"
         livenessProbe:
           httpGet:
             scheme: HTTP
@@ -59,12 +60,9 @@ spec:
       - name: mysqlpd 
         persistentVolumeClaim:
           claimName: mysql-local-claim
-      - name: config
+      - name: mysql-config
         configMap:
           name: mysql-config
-          items:
-          - key: cnf 
-            path: my.cnf 
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
