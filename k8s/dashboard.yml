@@ -81,23 +81,6 @@ spec:
   selector:
     k8s-app: kubernetes-dashboard
 
-# ------------------------------------------------------------
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    k8s-app: kubernetes-dashboard
-  name: kubernetes-dashboard-external
-  namespace: kube-public
-spec:
-  ports:
-    - port: 9090
-      targetPort: 9090
-      nodePort: 30090
-  type: NodePort
-  selector:
-    k8s-app: kubernetes-dashboard
-
 ---
 # ------------------- Dashboard Service Account ------------------- #
 apiVersion: v1

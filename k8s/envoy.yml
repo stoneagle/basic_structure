@@ -1,0 +1,146 @@
+# ------------------- envoy ConfigMap ------------------- #
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: envoy-config
+  namespace: kube-public 
+data:
+  front-envoy.yaml: |-
+    static_resources:
+      listeners:
+      - address:
+          socket_address:
+            address: 0.0.0.0
+            port_value: 80
+        filter_chains:
+        - filters:
+          - name: envoy.http_connection_manager
+            config:
+              codec_type: auto
+              stat_prefix: ingress_http
+              route_config:
+                name: local_route
+                virtual_hosts:
+                - name: backend 
+                  domains:
+                  - "*"
+                  routes:
+                  - match:
+                      prefix: "/evolution"
+                    route:
+                      cluster: evolution-envoy
+                  - match:
+                      prefix: "/dashboard"
+                    route:
+                      cluster: dashboard 
+                  - match:
+                      prefix: "/mysql"
+                    route:
+                      cluster: mysql
+              http_filters:
+              - name: envoy.router
+                config: {}
+      clusters:
+      - name: evolution-envoy
+        connect_timeout: 0.5s
+        type: strict_dns
+        lb_policy: round_robin
+        http2_protocol_options: {}
+        hosts:
+        - socket_address:
+            address: evolution-envoy.default.svc.cluster.local
+            port_value: 80 
+      - name: dashboard 
+        connect_timeout: 0.5s
+        type: strict_dns
+        lb_policy: round_robin
+        http2_protocol_options: {}
+        hosts:
+        - socket_address:
+            address: kubernetes-dashboard.kube-public.svc.cluster.local
+            port_value: 9090
+      - name: mysql
+        connect_timeout: 0.5s
+        type: strict_dns
+        lb_policy: round_robin
+        http2_protocol_options: {}
+        hosts:
+        - socket_address:
+            address: kubernetes-mysql.kube-public.svc.cluster.local
+            port_value: 3306 
+    admin:
+      access_log_path: "/dev/null"
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 8001
+
+---
+# ------------------- Envoy Deployment ------------------- #
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  labels:
+    k8s-app: kubernetes-envoy
+  name: kubernetes-envoy
+  namespace: kube-public
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s-app: kubernetes-envoy
+  template:
+    metadata:
+      labels:
+        k8s-app: kubernetes-envoy
+    spec:
+      containers:
+      - name: kubernetes-envoy
+        image: stoneagle/develop:envoy
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: envoy-config-volume
+          mountPath: /etc/front-envoy.yaml
+          subPath: front-envoy.yaml
+      volumes:
+      - name: envoy-config-volume
+        configMap:
+          name: envoy-config
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+
+---
+# ------------------- Envoy Service ------------------- #
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: kubernetes-envoy
+  name: kubernetes-envoy
+  namespace: kube-public
+spec:
+  ports:
+    - port: 80 
+      targetPort: 80 
+  selector:
+    k8s-app: kubernetes-envoy
+
+# ------------------------------------------------------------
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: kubernetes-envoy
+  name: kubernetes-envoy-external
+  namespace: kube-public
+spec:
+  ports:
+    - port: 80
+      targetPort: 80 
+      nodePort: 30080
+  type: NodePort
+  selector:
+    k8s-app: kubernetes-envoy

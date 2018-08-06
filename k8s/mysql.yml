@@ -88,20 +88,3 @@ spec:
       targetPort: 3306 
   selector:
     k8s-app: kubernetes-mysql
-
-# ------------------------------------------------------------
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: kubernetes-mysql
-  name: kubernetes-mysql-external
-  namespace: kube-public
-spec:
-  ports:
-    - port: 3306 
-      targetPort: 3306 
-      nodePort: 30306
-  type: NodePort
-  selector:
-    k8s-app: kubernetes-mysql
