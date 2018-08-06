@@ -1,0 +1,25 @@
+version: '2'
+services:
+  redis:
+    image: redis:3.2
+    container_name: ${PROJECT_NAME}-${DEV_USER}-redis
+    expose:
+      - "6379"
+    networks:
+      - default
+  mysql:
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    image: mysql:8.0.11
+    container_name: ${PROJECT_NAME}-${DEV_USER}-mysql
+    volumes:
+      - ../config/mysql.cnf:/etc/mysql/my.cnf
+      - ../database/mysql-8.0.11:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT}:3306"
+    networks:
+      - default
+networks:
+  default:
+    external:
+      name: ${DEV_USER}
