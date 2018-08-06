@@ -28,15 +28,8 @@ data:
                   - match:
                       prefix: "/evolution"
                     route:
+                      prefix_rewrite: "/"
                       cluster: evolution-envoy
-                  - match:
-                      prefix: "/dashboard"
-                    route:
-                      cluster: dashboard 
-                  - match:
-                      prefix: "/mysql"
-                    route:
-                      cluster: mysql
               http_filters:
               - name: envoy.router
                 config: {}
@@ -50,24 +43,6 @@ data:
         - socket_address:
             address: evolution-envoy.default.svc.cluster.local
             port_value: 80 
-      - name: dashboard 
-        connect_timeout: 0.5s
-        type: strict_dns
-        lb_policy: round_robin
-        http2_protocol_options: {}
-        hosts:
-        - socket_address:
-            address: kubernetes-dashboard.kube-public.svc.cluster.local
-            port_value: 9090
-      - name: mysql
-        connect_timeout: 0.5s
-        type: strict_dns
-        lb_policy: round_robin
-        http2_protocol_options: {}
-        hosts:
-        - socket_address:
-            address: kubernetes-mysql.kube-public.svc.cluster.local
-            port_value: 3306 
     admin:
       access_log_path: "/dev/null"
       address:
